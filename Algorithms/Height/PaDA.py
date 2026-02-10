@@ -9,7 +9,10 @@ def PaDAprob(ft, pathsets):
     else:
         current_ps = find_max_path_set(ft, pathsets)
         var = find_max_var(ft, current_ps)
-        return var, PaDAprob(ft, remove_var(pathsets, var)), PaDAprob(ft, remove_ps(pathsets, var))
+        ftvar = ft.find_vertex_by_name(var)
+        return DDT(var, ddtelement=DdtElementType.DEC,
+                   children=[PaDAprob(ft, remove_ps(pathsets, var)), PaDAprob(ft, remove_var(pathsets, var))],
+                   prob=ftvar.prob, cost=ftvar.cost)
 
 
 def PaDAsize(ft, pathsets):
@@ -20,7 +23,10 @@ def PaDAsize(ft, pathsets):
     else:
         current_ps = sorted(pathsets, key=len)[0]
         var = find_max_var(ft, current_ps)
-        return var, PaDAsize(ft, remove_var(pathsets, var)), PaDAsize(ft, remove_ps(pathsets, var))
+        ftvar = ft.find_vertex_by_name(var)
+        return DDT(var, ddtelement=DdtElementType.DEC,
+                   children=[PaDAsize(ft, remove_ps(pathsets, var)), PaDAsize(ft, remove_var(pathsets, var))],
+                   prob=ftvar.prob, cost=ftvar.cost)
 
 
 def remove_var(pathsets, remove):

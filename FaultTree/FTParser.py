@@ -1,4 +1,4 @@
-from FaultTree import *
+from FaultTree.FaultTree import *
 
 
 def FTParse(filename):

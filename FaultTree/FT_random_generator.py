@@ -5,42 +5,46 @@ import numpy as np
 class FaultTreeGenerator:
     def __init__(self, or_prob=0.5):
         self.counters = {"BE": 0, "G": 0}
-        self.node_pool = []
         self.or_prob = or_prob
 
     def generate_FT(self, be_budget, max_children=4):
-        reuse = np.random.rand()
-
+        # ----- BASIC EVENT -----
         if be_budget == 1:
             self.counters["BE"] += 1
-            node = FT(
+            prob = np.clip(np.random.uniform(0.00001, 0.01), 0, 1)
+            cost = np.random.randint(1, 11)
+            return FT(
                 f"BE{self.counters['BE']}",
                 FtElementType.BE,
-                prob=np.random.uniform(0, 10) * (10 ** np.random.uniform(-5, -3)),
-                cost=round(np.random.geometric(0.01))
+                prob=prob,
+                cost=cost
             )
-            return node
 
-        gate = np.random.choice(["AND", "OR"], p=[1 - self.or_prob, self.or_prob])
+        # ----- GATE -----
+        gate_type = FtElementType.OR if np.random.rand() < self.or_prob else FtElementType.AND
         self.counters["G"] += 1
+        gate_name = f"G{self.counters['G']}"
 
+        # Create gate node first with empty children
+        node = FT(name=gate_name, ftelement=gate_type, children=[])
+
+        # Determine number of children
         max_k = min(max_children, be_budget)
         n_children = np.random.randint(2, max_k + 1)
 
+        # Split budget among children
         splits = np.ones(n_children, dtype=int)
         remaining = be_budget - n_children
         for _ in range(remaining):
             splits[np.random.randint(0, n_children)] += 1
 
-        children = [self.generate_FT(b, max_children) for b in splits]
-
-        node = FT(
-            name=f"G{self.counters['G']}",
-            ftelement=FtElementType.AND if gate == "AND" else FtElementType.OR,
-            children=children
-        )
+        # Recursively generate children and attach to gate
+        for b in splits:
+            child = self.generate_FT(b, max_children)
+            node.children.append(child)
 
         return node
+
 
 
 def save_ft(ft, output):
@@ -85,7 +89,7 @@ def save_ft(ft, output):
 
 
 if __name__ == "__main__":
-    for i in range(1,500):
+    for i in range(1,10):
         or_p = np.random.uniform(0, 1)
         gen = FaultTreeGenerator(or_prob=or_p)
         bes = np.random.randint(2,50)

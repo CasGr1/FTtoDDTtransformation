@@ -1,3 +1,4 @@
+
 from DDT.DDT import *
 
 
@@ -9,7 +10,8 @@ def PaDAcost(ft, pathsets):
     else:
         current_ps = find_min_path_set(ft, pathsets)
         var = find_max_var(ft, current_ps)
-        return var, PaDAcost(ft, remove_var(pathsets, var)), PaDAcost(ft, remove_ps(pathsets, var))
+        ftvar = ft.find_vertex_by_name(var)
+        return DDT(var, ddtelement=DdtElementType.DEC, children=[PaDAcost(ft, remove_ps(pathsets, var)), PaDAcost(ft, remove_var(pathsets, var))], prob=ftvar.prob, cost=ftvar.cost)
 
 
 def remove_var(pathsets, remove):

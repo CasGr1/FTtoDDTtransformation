@@ -2,7 +2,7 @@ from FaultTree.FaultTree import *
 from DDT.DDT import *
 
 
-def EDA(ft, variables, probabilities):
+def EDA(ft, variables, probabilities, cost):
     if ft_false(ft):
         return DDT('ZERO', DdtElementType.ZERO)
     if ft_true(ft):
@@ -16,14 +16,14 @@ def EDA(ft, variables, probabilities):
         left_ft = restrict(ft, var, 0)
         right_ft = restrict(ft, var, 1)
 
-        left_ddt = EDA(left_ft, remaining_var, probabilities)
-        right_ddt = EDA(right_ft, remaining_var, probabilities)
+        left_ddt = EDA(left_ft, remaining_var, probabilities, cost)
+        right_ddt = EDA(right_ft, remaining_var, probabilities, cost)
 
         expected_height = 1 + (1-probabilities[var])*left_ddt.expected_height() + probabilities[var]*right_ddt.expected_height()
 
         if expected_height < optimal_height:
             optimal_height = expected_height
-            optimal_ddt = DDT(name=var, ddtelement=DdtElementType.DEC, children=[left_ddt, right_ddt], prob=probabilities[var])
+            optimal_ddt = DDT(name=var, ddtelement=DdtElementType.DEC, children=[left_ddt, right_ddt], prob=probabilities[var], cost=cost[var])
     return optimal_ddt
 
 

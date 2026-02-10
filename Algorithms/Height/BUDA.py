@@ -17,15 +17,19 @@ def BUDA(ft):
                 DDT('ONE', DdtElementType.ONE)
             ],
             prob=ft.prob,
+            cost=ft.cost
         )
+
+    subtrees = [BUDA(ch) for ch in ft.children]
+
     if ft.type == FtElementType.AND:
-        ordered_children = sorted(ft.children, key=lambda child: child.prob)
+        ordered_children = sorted(subtrees, key=lambda x: x.fail_prob())
         new_ddt = ordered_children[0]
         for i in range(1, len(ordered_children)):
             new_ddt = replace_leaves(new_ddt, DdtElementType.ONE, ordered_children[i])
         return new_ddt
     if ft.type == FtElementType.OR:
-        ordered_children = sorted(ft.children, key=lambda child: child.prob, reverse=True)
+        ordered_children = sorted(subtrees, key=lambda x: x.fail_prob(), reverse=True)
         new_ddt = ordered_children[0]
         for i in range(1, len(ordered_children)):
             new_ddt = replace_leaves(new_ddt, DdtElementType.ONE, ordered_children[i])

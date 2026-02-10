@@ -1,9 +1,12 @@
 from enum import Enum
 from itertools import product
+
+
 class FtElementType(Enum):
     BE = 1
     AND = 2
     OR = 3
+
 
 class FT:
     def __init__(self, name, ftelement, children=None, prob=None, cost=None):

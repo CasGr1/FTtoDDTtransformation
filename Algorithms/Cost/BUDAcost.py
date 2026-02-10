@@ -24,7 +24,6 @@ def BUDAcostalgorithm(ft):
             cost=ft.cost
         )
 
-    # Recursively process children
     subtrees = [BUDAcostalgorithm(ch) for ch in ft.children]
 
     if ft.type == FtElementType.AND:
