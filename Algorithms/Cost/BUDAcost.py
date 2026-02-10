@@ -1,12 +1,14 @@
 from FaultTree.FaultTree import *
 from DDT.DDT import *
 
+
 def BUDAcost(ft, no_dag=False):
     ddt = BUDAcostalgorithm(ft)
     if not no_dag:
         return ddt.remove_duplicate_vertices()
     if no_dag:
         return ddt
+
 
 def BUDAcostalgorithm(ft):
     # Base case: Basic Event (leaf)
@@ -38,6 +40,7 @@ def BUDAcostalgorithm(ft):
         for i in range(1, len(ordered_children)):
             new_ddt = replace_leaves(new_ddt, DdtElementType.ZERO, ordered_children[i])
         return new_ddt
+
 
 def replace_leaves(ddt, target_type, replacement):
     # If current node is a leaf of the target type, replace it
