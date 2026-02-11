@@ -5,7 +5,7 @@ import multiprocessing as mp
 from timeit import default_timer as timer
 import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
-
+from Testing.test_algorithms import compare_ft_to_ddt
 from FaultTree.FTParser import *
 
 # Algorithm imports
@@ -50,7 +50,8 @@ def expected_costs_from_tree(FaultTree, algorithm, runtime_flag=False):
     def _postprocess(ddt):
         exp_cost = ddt.expected_cost()
         exp_cost_fail = ddt.expected_cost_failure() / (ddt.fail_prob() or 1)
-        return exp_cost, exp_cost_fail
+        compared_to_ft = compare_ft_to_ddt(ddt, FaultTree)
+        return exp_cost, exp_cost_fail, compared_to_ft
 
     runs = 25 if runtime_flag else 1
 
@@ -99,9 +100,9 @@ def write_csv_header(output_folder, algname, addition):
     path = os.path.join(output_folder, f"{algname}{addition}.csv")
     with open(path, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["FT", "expcost", "expcost_given_failure", "bes", "time(s)", "gates", "CS"])
+        writer.writerow(["FT", "expcost", "expcost_given_failure", "bes", "time(s)", "gates", "CS", "TESTIFSAME"])
 
-def _worker(q, file_path, fname, algorithms, addition):
+def _worker(q, file_path, fname, algorithms, addition, rtime_flag):
     try:
         results = []
 
@@ -113,11 +114,11 @@ def _worker(q, file_path, fname, algorithms, addition):
         cs = len(FaultTree.cut_set())
 
         for alg in algorithms:
-            expcost, expcost_fail, runtime = expected_costs_from_tree(
-                FaultTree, alg, runtime_flag=False
+            expcost, expcost_fail, compared, runtime = expected_costs_from_tree(
+                FaultTree, alg, runtime_flag=rtime_flag
             )
             results.append(
-                (alg, addition, fname, expcost, expcost_fail, bes, runtime, gates, cs)
+                (alg, addition, fname, expcost, expcost_fail, bes, runtime, gates, cs, compared)
             )
 
         q.put(("OK", results))
@@ -135,11 +136,11 @@ def _worker(q, file_path, fname, algorithms, addition):
         except Exception:
             pass
 
-def process_file(file_path, fname, algorithms, addition, timeout=1):
+def process_file(file_path, fname, algorithms, addition, rt_flag, timeout=1):
     q = mp.Queue()
     p = mp.Process(
         target=_worker,
-        args=(q, file_path, fname, algorithms, addition)
+        args=(q, file_path, fname, algorithms, addition, rt_flag)
     )
 
     print(f"file starting: {file_path} at {datetime.datetime.now()}")
@@ -193,6 +194,7 @@ if __name__ == "__main__":
     addition = config.get("addition", "TEST")
     algorithms = config.get("algorithms", ["BUDAcost", "BUDA"])
     timeout_sec = config.get("timeout", 10)
+    rti_flag =  config.get("runtime", False)
     runtime_flag = config.get("runtime", True)
     max_workers = config.get("max_workers") or max(1, os.cpu_count() // 2)
     with_subfolder = config.get("with_subfolder", False)
@@ -221,7 +223,7 @@ if __name__ == "__main__":
     MAX_WORKERS = max(1, os.cpu_count() // 2)
 
     with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = [executor.submit(process_file, *task, algorithms, addition, timeout_sec) for task in tasks]
+        futures = [executor.submit(process_file, *task, algorithms, addition, rti_flag, timeout_sec) for task in tasks]
 
         try:
             for future in as_completed(futures):
@@ -236,7 +238,8 @@ if __name__ == "__main__":
                         bes,
                         runtime,
                         gates,
-                        cs
+                        cs,
+                        compared
                 ) in results:
                     csv_path = os.path.join(output_folder, f"{alg}{addition}.csv")
                     with open(csv_path, "a", newline="") as f:
@@ -248,7 +251,8 @@ if __name__ == "__main__":
                             bes,
                             runtime,
                             gates,
-                            cs
+                            cs,
+                            compared
                         ])
                         f.flush()
 

@@ -158,6 +158,29 @@ class FT:
                 ft.prob = 1-result
             return 1 - result
 
+    def has_cycle(self):
+        visited = set()
+        rec_stack = set()
+
+        def dfs(node):
+            node_id = id(node)
+            if node_id in rec_stack:
+                return True
+            if node_id in visited:
+                return False
+
+            visited.add(node_id)
+            rec_stack.add(node_id)
+
+            for child in getattr(node, "children", []):
+                if dfs(child):
+                    return True
+
+            rec_stack.remove(node_id)
+            return False
+
+        return dfs(self)
+
     def find_vertex_by_name(self, name, ft=None):
         if ft is None:
             ft = self

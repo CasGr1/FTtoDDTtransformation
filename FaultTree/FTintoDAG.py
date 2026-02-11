@@ -1,6 +1,6 @@
 import random
 from FTcombine import *
-
+from FaultTree import *
 
 def merge_two_bes(bes, gates):
     if len(bes) < 2:

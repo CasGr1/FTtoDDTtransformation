@@ -32,7 +32,7 @@ def BUDA(ft):
         ordered_children = sorted(subtrees, key=lambda x: x.fail_prob(), reverse=True)
         new_ddt = ordered_children[0]
         for i in range(1, len(ordered_children)):
-            new_ddt = replace_leaves(new_ddt, DdtElementType.ONE, ordered_children[i])
+            new_ddt = replace_leaves(new_ddt, DdtElementType.ZERO, ordered_children[i])
         return new_ddt
 
 

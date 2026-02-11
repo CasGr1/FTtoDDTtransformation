@@ -89,7 +89,7 @@ def save_ft(ft, output):
 
 
 if __name__ == "__main__":
-    for i in range(1,10):
+    for i in range(1,501):
         or_p = np.random.uniform(0, 1)
         gen = FaultTreeGenerator(or_prob=or_p)
         bes = np.random.randint(2,50)

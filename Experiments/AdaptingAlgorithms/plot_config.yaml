@@ -1,0 +1,36 @@
+active_plot: summary
+
+data:
+  folder: Results/TEST/
+  addition: TEST
+
+output:
+  show: true
+  save: false
+  dir: figures/
+
+plots:
+  x_ysubplot:
+    type: xy
+    metric: expcost_given_failure
+    log: true
+    failure: true
+    layout: [2, 2]
+    pairs:
+      - [BUDAcost, BUDA]
+      - [BUDAcost, BUDA]
+      - [CuDAcost, CuDA]
+      - [PaDAcost, PaDA]
+
+  summary:
+    type: summary
+    metric: expcost
+    plottype: bar
+    pltdata: avg
+    names:
+      - BUDAcost
+      - BUDA
+      - CuDAcost
+      - CuDA
+      - PaDAcost
+      - PaDA

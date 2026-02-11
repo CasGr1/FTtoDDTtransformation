@@ -11,7 +11,7 @@ def PaDAprob(ft, pathsets):
         var = find_max_var(ft, current_ps)
         ftvar = ft.find_vertex_by_name(var)
         return DDT(var, ddtelement=DdtElementType.DEC,
-                   children=[PaDAprob(ft, remove_ps(pathsets, var)), PaDAprob(ft, remove_var(pathsets, var))],
+                   children=[PaDAprob(ft, remove_var(pathsets, var)), PaDAprob(ft, remove_ps(pathsets, var))],
                    prob=ftvar.prob, cost=ftvar.cost)
 
 
