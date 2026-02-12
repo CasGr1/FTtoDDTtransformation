@@ -5,24 +5,25 @@ import os
 import numpy as np
 import statistics
 import math
+from adjustText import adjust_text
 
-# ------------------ Config loading ------------------
 
 def load_yaml_config(path="plot_config.yaml"):
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
-# ------------------ Data helpers ------------------
 
 def load_csv(folder, name, addition, metric):
-    df = pd.read_csv(os.path.join(folder, f"{name}{addition}.csv"))
+    df = pd.read_csv(os.path.join(folder, f"{name}{addition}"))
     df[metric] = pd.to_numeric(df[metric], errors="coerce")
     return df.sort_values(by=["FT"])
+
 
 def load_data_in_10s(file, column):
     data = pd.read_csv(file)
     data[column] = pd.to_numeric(data[column], errors="coerce")
     data = data.dropna(subset=[column, "bes"])
+    data = data[data[column] != 0]
 
     max_be = int(data["bes"].max())
     n_bins = math.ceil((max_be + 1) / 10)
@@ -34,7 +35,6 @@ def load_data_in_10s(file, column):
 
     return tuple(buckets)
 
-# ------------------ Dispatcher ------------------
 
 def run_from_yaml(cfg):
     active = cfg["active_plot"]
@@ -61,13 +61,16 @@ def run_from_yaml(cfg):
             default_name=plot_cfg.get("name", "summary_plot")
         )
 
-# ------------------ XY plots ------------------
 
 def run_xy_plot(cfg):
     pairs = cfg["pairs"]
     metric = cfg["metric"]
+    overlay = cfg.get("overlay", False)
 
-    if "layout" in cfg:
+    if overlay:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        axes = [ax]
+    elif "layout" in cfg:
         rows, cols = cfg["layout"]
         fig, axes = plt.subplots(
             rows, cols,
@@ -79,41 +82,86 @@ def run_xy_plot(cfg):
         fig, ax = plt.subplots(figsize=(8, 6))
         axes = [ax]
 
-    if len(axes) < len(pairs):
+    if not overlay and len(axes) < len(pairs):
         raise ValueError("Not enough subplots for given pairs")
 
-    for ax, (name1, name2) in zip(axes, pairs):
-        d1 = load_csv(cfg["folder"], name1, cfg["addition"], metric)
-        d2 = load_csv(cfg["folder"], name2, cfg["addition"], metric)
+    colors = cfg.get("color", [])
+    markers = cfg.get("markers", [])
+    if overlay:
+        ax = axes[0]
 
-        plot_x_y(
-            d1, d2,
-            metric=metric,
-            log=cfg.get("log", False),
-            name1=name1,
-            name2=name2,
-            failure=cfg.get("failure", False),
-            ax=ax,
-            xyline=cfg.get("xyline", True)
-        )
+        for i, (name1, name2) in enumerate(pairs):
 
-    if cfg.get("tight", True):
-        fig.tight_layout()
+            if i >= len(colors):
+                raise ValueError("Not enough colors provided for overlay pairs")
 
-    return fig
+            d1 = load_csv(cfg["folder"], name1, cfg["addition"], metric)
+            d2 = load_csv(cfg["folder"], name2, cfg["addition"], metric)
 
-def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True):
+            plot_x_y(
+                d1, d2,
+                metric=metric,
+                log=cfg.get("log", False),
+                name1=name1,
+                name2=name2,
+                failure=cfg.get("failure", False),
+                ax=ax,
+                xyline=(i==0),
+                color=colors[i],
+                marker=markers[i]
+            )
+            ax.legend()
+    else:
+        for ax, (name1, name2) in zip(axes, pairs):
+            d1 = load_csv(cfg["folder"], name1, cfg["addition"], metric)
+            d2 = load_csv(cfg["folder"], name2, cfg["addition"], metric)
+
+            plot_x_y(
+                d1, d2,
+                metric=metric,
+                log=cfg.get("log", False),
+                name1=name1,
+                name2=name2,
+                failure=cfg.get("failure", False),
+                ax=ax,
+                xyline=cfg.get("xyline", True),
+                color=None
+            )
+
+
+def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True, color=None, marker=None):
     vals = data1[metric].dropna()
     if xyline and not vals.empty:
         maxvalue = vals.max()
         minvalue = vals.min()
+        # maxvalue = 1500
+        # minvalue = vals.min()
 
-    ax.scatter(data1[metric], data2[metric], edgecolors="none")
+    # x = data1[metric]
+    # y = data2[metric]
+
+    # mask_outlier = (x > maxvalue) | (y > maxvalue)
+    # mask_normal = ~mask_outlier
+
+    if color is None:
+        color = "blue"
+    if marker is None:
+        marker = "."
+    # ax.scatter(
+    #     x[mask_normal],
+    #     y[mask_normal],
+    #     edgecolors="none",
+    #     color=color,
+    #     label=f"{name2}",
+    #     marker=marker
+    # )
+
+    ax.scatter(data1[metric], data2[metric], color=color, marker=marker,label=name2)
 
     if "cost" in metric:
-        ax.set_xlabel(f"expected cost {name1}")
-        ax.set_ylabel(f"expected cost {name2}")
-        title = f"Expected cost comparison of {name1} vs {name2}"
+        ax.set_xlabel(f"expected cost cost")
+        ax.set_ylabel(f"expected cost original")
+        title = f"Expected cost given failure comparison FFORT "
     elif "time" in metric:
         ax.set_xlabel(f"runtime (s) {name1}")
         ax.set_ylabel(f"runtime (s) {name2}")
@@ -133,7 +181,8 @@ def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True):
             ax.plot(
                 np.linspace(1, maxvalue * 1.05),
                 np.linspace(1, maxvalue * 1.05),
-                c="red"
+                color="#C44E52",
+                linestyle='--'
             )
             ax.set_xlim(1, maxvalue * 1.05)
             ax.set_ylim(1, maxvalue * 1.05)
@@ -141,16 +190,16 @@ def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True):
             ax.plot(
                 np.linspace(minvalue * 0.95, maxvalue * 1.05),
                 np.linspace(minvalue * 0.95, maxvalue * 1.05),
-                c="red"
+                color="#C44E52",
+                linestyle='--'
             )
             ax.set_xlim(minvalue * 0.95, maxvalue * 1.05)
             ax.set_ylim(minvalue * 0.95, maxvalue * 1.05)
 
-# ------------------ Summary plots ------------------
 
 def plot_every_algorithm(cfg):
     files = [
-        os.path.join(cfg["folder"], name + cfg["addition"] + ".csv")
+        os.path.join(cfg["folder"], name + cfg["addition"])
         for name in cfg["names"]
     ]
 
@@ -164,6 +213,9 @@ def plot_every_algorithm(cfg):
 
     plottype = cfg.get("plottype", "bar")
     pltdata = cfg.get("pltdata", "median")
+
+    colors = cfg.get("colors")
+    patterns = cfg.get("patterns")
 
     bar_width = 0.8 / len(files) if plottype == "bar" else None
 
@@ -179,13 +231,22 @@ def plot_every_algorithm(cfg):
         plotdata += [float("nan")] * (max_buckets - len(plotdata))
         data_padded = list(data) + [[]] * (max_buckets - len(data))
 
+        color = colors[i] if colors and i < len(colors) else None
+        hatch = patterns[i] if patterns and i < len(patterns) else None
+
         if plottype == "bar":
-            ax.bar(
-                x - 0.4 + bar_width / 2 + i * bar_width,
-                plotdata,
+            bar_kwargs = dict(
+                x=x - 0.4 + bar_width / 2 + i * bar_width,
+                height=plotdata,
                 width=bar_width,
                 label=name
             )
+            if color is not None:
+                bar_kwargs["color"] = color
+            if hatch is not None:
+                bar_kwargs["hatch"] = hatch
+
+            ax.bar(**bar_kwargs)
         elif plottype == "scatter":
             ax.scatter(x, plotdata, marker="_", label=name)
         elif plottype == "box":
@@ -215,7 +276,6 @@ def plot_every_algorithm(cfg):
 
     return fig
 
-# ------------------ Output ------------------
 
 def handle_output(fig, output_cfg, default_name="figure"):
     show = output_cfg.get("show", True)

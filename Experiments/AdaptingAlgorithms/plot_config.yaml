@@ -1,8 +1,8 @@
-active_plot: summary
+active_plot: x_yplot
 
 data:
-  folder: Results/TEST/
-  addition: TEST
+  folder: Results/FFORT/
+  addition: .csv
 
 output:
   show: true
@@ -12,15 +12,42 @@ output:
 plots:
   x_ysubplot:
     type: xy
-    metric: expcost_given_failure
+    metric: expcost
     log: true
-    failure: true
+    failure: false
     layout: [2, 2]
     pairs:
-      - [BUDAcost, BUDA]
+      - [EDAcost, EDA]
       - [BUDAcost, BUDA]
       - [CuDAcost, CuDA]
       - [PaDAcost, PaDA]
+    color:
+      - "#4C72B0" # blue
+      - "#C44E52" # red
+
+  x_yplot:
+    type: xy
+    metric: expcost
+    log: false
+    failure: false
+    layout: [1,1]
+    overlay: True
+    pairs:
+      - [BUDAcost, BUDA]
+      - [CuDAcost, CuDA]
+      - [PaDAcost, PaDA]
+#    pairs:
+#      - [BUDAcost, CuDAcost]
+#      - [BUDAcost, PaDAcost]
+#      - [CuDAcost, PaDAcost]
+    color:
+      - "#2E5A9A" # main points (medium blue)
+      - "#55A868" # red (for y=x line)
+      - "#DD8452"
+    markers:
+      - x
+      - p
+      - D
 
   summary:
     type: summary
@@ -34,3 +61,15 @@ plots:
       - CuDA
       - PaDAcost
       - PaDA
+#      - EDAcost
+#      - EDA
+    colors:
+      - "#7EA6E0" # blue
+      - "#4C72B0"
+      - "#E08A8D" # red
+      - "#C44E52"
+      - "#88C999" # green
+      - "#55A868"
+      - "#F2B38F" # orange
+      - "#DD8452"
+

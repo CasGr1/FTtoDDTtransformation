@@ -7,6 +7,7 @@ import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from Testing.test_algorithms import compare_ft_to_ddt
 from FaultTree.FTParser import *
+import re
 
 # Algorithm imports
 from Algorithms.Cost.EDAcost import EDAcost
@@ -67,7 +68,7 @@ def expected_costs_from_tree(FaultTree, algorithm, runtime_flag=False):
     }
 
     ddt, rtime = _measure(alg_map[algorithm], runs)
-    return (*_postprocess(ddt), rtime)
+    return *_postprocess(ddt), rtime
 
 # ----------------------------
 # Simple file metrics
@@ -152,14 +153,14 @@ def process_file(file_path, fname, algorithms, addition, rt_flag, timeout=1):
         p.terminate()
         p.join()
         return [
-            (alg, addition, fname, TIMEOUT_RESULT, TIMEOUT_RESULT, 0, 0, 0, 0)
+            (alg, addition, fname, TIMEOUT_RESULT, TIMEOUT_RESULT, 0, 0, 0, 0, False)
             for alg in algorithms
         ]
 
     if q.empty():
         print(f"NO RESULT (likely crash): {file_path}")
         return [
-            (alg, addition, fname, ERROR_RESULT, ERROR_RESULT, 0, 0, 0, 0)
+            (alg, addition, fname, ERROR_RESULT, ERROR_RESULT, 0, 0, 0, 0, False)
             for alg in algorithms
         ]
 
@@ -168,14 +169,14 @@ def process_file(file_path, fname, algorithms, addition, rt_flag, timeout=1):
     if status == "OOM":
         print(f"OUT OF MEMORY: {file_path}")
         return [
-            (alg, addition, fname, OOM_RESULT, OOM_RESULT, 0, 0, 0, 0)
+            (alg, addition, fname, OOM_RESULT, OOM_RESULT, 0, 0, 0, 0, False)
             for alg in algorithms
         ]
 
     if status == "ERR":
         print(f"ERROR in worker ({payload}): {file_path}")
         return [
-            (alg, addition, fname, ERROR_RESULT, ERROR_RESULT, 0, 0, 0, 0)
+            (alg, addition, fname, ERROR_RESULT, ERROR_RESULT, 0, 0, 0, 0, False)
             for alg in algorithms
         ]
 
@@ -217,6 +218,8 @@ if __name__ == "__main__":
     else:
         for fname in os.listdir(folder):
             full_path = os.path.join(folder, fname)
+            # match = re.search(r'bes(\d+)', fname)
+            # if match and int(match.group(1)) < 20:
             if os.path.isfile(full_path):
                 tasks.append((full_path, fname))
 

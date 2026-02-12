@@ -1,16 +1,17 @@
-folder: "../../FaultTree/FTs/RandomGen/BenchmarkDAG/"
+#folder: "../../FaultTree/FTs/FFORTcost/"
+folder: "../../FaultTree/FTs/RandomGen/BenchmarkDAG"
 with_subfolder: false
 output_folder: "Results/report/"
 addition: ""
-timeout: 1800
-runtime: True
+timeout: 300
+runtime: False
 algorithms:
 #  - "EDAcost"
 #  - "EDA"
-  - "BUDAcost"
-  - "BUDA"
-  - "CuDAcost"
-  - "CuDA"
+#  - "BUDAcost"
+#  - "BUDA"
+#  - "CuDAcost"
+#  - "CuDA"
   - "PaDAcost"
   - "PaDA"
 max_workers: null  # If null, defaults to half CPU cores
