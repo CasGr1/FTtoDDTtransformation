@@ -1,0 +1,4 @@
+fault_tree_folder: "../../FaultTree/FTs/FFORTcombined/MinHeight7"
+output_folder: "results/MinHeight7"
+timeout: 60
+recursive: false

@@ -7,25 +7,44 @@ def FTpartialparser(filename, extension):
     with open(filename, "r") as file:
         gates = []
         bes = []
+
         for line in file:
             line = line.strip().replace('"', '').replace(';', '')
+            if not line:
+                continue
+
             linelist = line.split()
             updated_line = []
+
             for token in linelist:
-                if token.lower() in {"and", "or"}:
+                token_lower = token.lower()
+
+                # Preserve logic operators
+                if token_lower in {"and", "or"}:
                     updated_line.append(token)
-                elif "prob" in token.lower():
+
+                # Preserve probability and cost exactly as written
+                elif token_lower.startswith("prob="):
                     updated_line.append(token)
+
+                elif token_lower.startswith("cost="):
+                    updated_line.append(token)
+
+                # Everything else is a name → apply extension if needed
                 else:
                     if extension is not None:
                         updated_line.append(f"{token}_{extension}")
-                    elif extension is None:
-                        updated_line.append(f"{token}")
+                    else:
+                        updated_line.append(token)
 
-            if "or" in linelist[1] or "and" in linelist[1]:
-                gates.append(updated_line)
-            if "prob" in linelist[1]:
-                bes.append(updated_line)
+            # Classify line type safely
+            if len(updated_line) > 1:
+                if updated_line[1].lower() in {"and", "or"}:
+                    gates.append(updated_line)
+
+                elif updated_line[1].lower().startswith("prob="):
+                    bes.append(updated_line)
+
         return gates, bes
 
 def FTsave(FTgates, FTbes, output):
@@ -40,7 +59,9 @@ def FTsave(FTgates, FTbes, output):
             first = f'"{sublist[0]}"'
             prob = sublist[1]
             cost = sublist[2]
+            # cost = sublist[2]
             f.write(f"{first} {prob} {cost};\n")
+            # f.write(f"{first} {prob} {cost};\n")
 
 
 def random_BE(FT1gates, FT1bes, FT2gates, FT2bes):
@@ -77,7 +98,7 @@ def random_gen(folder, min_size):
     new_ft = FTpartialparser(os.path.join(folder, FTfile), "A")
     extension = 1
     height = 0
-    while len(new_ft[0]) < min_size:
+    while height < min_size:
         ext_ftfile = np.random.choice(os.listdir(folder))
         ext_ft = FTpartialparser(os.path.join(folder, ext_ftfile), str(extension))
         choice = np.random.randint(1, 4)
@@ -87,18 +108,17 @@ def random_gen(folder, min_size):
             new_ft = random_shared_be(new_ft[0], new_ft[1], ext_ft[0], ext_ft[1], np.random.choice(["and", "or"]))
         elif choice == 3:
             new_ft = new_TOP(new_ft[0], new_ft[1], ext_ft[0], ext_ft[1], np.random.choice(["and", "or"]))
-        # FTsave(new_ft[0], new_ft[1], "FTexamples/Generated/temp.dft")
-        # FTparsed = FTParse("FTexamples/Generated/temp.dft")
-        # height = FTparsed.max_height()
-        # print(height)
+        FTsave(new_ft[0], new_ft[1], "FTs/FFORTcombined/MinHeight5/temp.dft")
+        FTparsed = FTParse("FTs/FFORTcombined/MinHeight5/temp.dft")
+        height = FTparsed.max_height()
+        print(height)
         extension += 1
     return new_ft
 
 
 if __name__ == "__main__":
-    folder = "FTexamples/FFORT"
-    # print(random_gen(folder, 10))
+    folder = "FTs/FFORT"
 
-    for i in range(0, 20):
-        new = random_gen(folder, 100)
-        FTsave(new[0], new[1], "FTexamples/Generated/MinSize100/FT" + str(i) + ".dft")
+    for i in range(0, 50):
+        new = random_gen(folder, 7)
+        FTsave(new[0], new[1], "FTs/FFORTcombined/MinHeight7/FT" + str(i) + ".dft")

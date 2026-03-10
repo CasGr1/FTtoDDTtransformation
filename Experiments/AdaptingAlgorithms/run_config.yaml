@@ -1,17 +1,21 @@
-#folder: "../../FaultTree/FTs/FFORTcost/"
-folder: "../../FaultTree/FTs/RandomGen/BenchmarkDAG"
+folder: "../../FaultTree/FTs/FTFINAL/DAG"
+#folder: "../../FaultTree/FTs/FFORTcombined/MinHeight7"
 with_subfolder: false
-output_folder: "Results/report/"
-addition: ""
-timeout: 300
-runtime: False
+output_folder: "REALFINAL/Runtime"
+addition: "runtime"
+timeout: 1500
+runtime: True
 algorithms:
-#  - "EDAcost"
-#  - "EDA"
+  - "EDAcost"
+  - "EDA"
 #  - "BUDAcost"
 #  - "BUDA"
 #  - "CuDAcost"
 #  - "CuDA"
-  - "PaDAcost"
-  - "PaDA"
+#  - "PaDAcost"
+#  - "PaDA"
+#  - "BarraCuDA0"
+#  - "BarraCuDA1"
+#  - "BarraCuDA2"
+#  - "BarraCuDA3"
 max_workers: null  # If null, defaults to half CPU cores

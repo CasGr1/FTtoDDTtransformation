@@ -12,7 +12,7 @@ class FaultTreeGenerator:
         if be_budget == 1:
             self.counters["BE"] += 1
             prob = np.clip(np.random.uniform(0.00001, 0.01), 0, 1)
-            cost = np.random.randint(1, 11)
+            cost = np.random.geometric(0.01)
             return FT(
                 f"BE{self.counters['BE']}",
                 FtElementType.BE,
@@ -44,7 +44,6 @@ class FaultTreeGenerator:
             node.children.append(child)
 
         return node
-
 
 
 def save_ft(ft, output):
@@ -89,10 +88,11 @@ def save_ft(ft, output):
 
 
 if __name__ == "__main__":
-    for i in range(1,501):
-        or_p = np.random.uniform(0, 1)
-        gen = FaultTreeGenerator(or_prob=or_p)
-        bes = np.random.randint(2,50)
-        FaultT = gen.generate_FT(bes, max_children=2)
+    for i in range(2, 50):
+        for j in range(1,11):
+            or_p = np.random.uniform(0, 1)
+            gen = FaultTreeGenerator(or_prob=or_p)
+            max_children = np.random.uniform(2, 10)
+            FaultT = gen.generate_FT(i, max_children=max_children)
 
-        save_ft(FaultT, f"FTs/RandomGen/Benchmark/ft{i}_bes{bes}_or{round(or_p, 3)}.dft")
+            save_ft(FaultT, f"FTs/FTFINAL/NORMAL/bes{i}_ft{j}_or{round(or_p, 3)}_maxc_{max_children}.dft")

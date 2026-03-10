@@ -14,10 +14,12 @@ from Algorithms.Cost.EDAcost import EDAcost
 from Algorithms.Cost.PaDAcost import PaDAcost
 from Algorithms.Cost.BUDAcost import BUDAcost
 from Algorithms.Cost.CuDAcost import CuDAcost
+from Algorithms.Cost.BarraCuDA import BarraCuDA
 from Algorithms.Height.EDA import EDA
 from Algorithms.Height.PaDA import PaDAprob
 from Algorithms.Height.BUDA import BUDA
 from Algorithms.Height.CuDA import CuDAprob
+
 
 # Result constants
 OOM_RESULT = "OOM"
@@ -61,6 +63,10 @@ def expected_costs_from_tree(FaultTree, algorithm, runtime_flag=False):
         "EDAcost": lambda: EDAcost(FaultTree, B, P, cost),
         "BUDA": lambda: BUDA(FaultTree).remove_duplicate_vertices(),
         "BUDAcost": lambda: BUDAcost(FaultTree).remove_duplicate_vertices(),
+        "BarraCuDA0": lambda: BarraCuDA(FaultTree, 0),
+        "BarraCuDA1": lambda: BarraCuDA(FaultTree, 1),
+        "BarraCuDA2": lambda: BarraCuDA(FaultTree, 2),
+        "BarraCuDA3": lambda: BarraCuDA(FaultTree, 3),
         "CuDA": lambda: CuDAprob(FaultTree, FaultTree.cut_set()),
         "CuDAcost": lambda: CuDAcost(FaultTree, FaultTree.cut_set()),
         "PaDA": lambda: PaDAprob(FaultTree, FaultTree.path_set()),
@@ -195,7 +201,7 @@ if __name__ == "__main__":
     addition = config.get("addition", "TEST")
     algorithms = config.get("algorithms", ["BUDAcost", "BUDA"])
     timeout_sec = config.get("timeout", 10)
-    rti_flag =  config.get("runtime", False)
+    rti_flag = config.get("runtime", False)
     runtime_flag = config.get("runtime", True)
     max_workers = config.get("max_workers") or max(1, os.cpu_count() // 2)
     with_subfolder = config.get("with_subfolder", False)
@@ -218,10 +224,10 @@ if __name__ == "__main__":
     else:
         for fname in os.listdir(folder):
             full_path = os.path.join(folder, fname)
-            # match = re.search(r'bes(\d+)', fname)
-            # if match and int(match.group(1)) < 20:
-            if os.path.isfile(full_path):
-                tasks.append((full_path, fname))
+            match = re.search(r'bes(\d+)', fname)
+            if match and int(match.group(1)) < 10:
+                if os.path.isfile(full_path):
+                    tasks.append((full_path, fname))
 
     MAX_WORKERS = max(1, os.cpu_count() // 2)
 

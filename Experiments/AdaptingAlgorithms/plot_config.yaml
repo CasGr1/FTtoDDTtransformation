@@ -1,7 +1,8 @@
 active_plot: x_yplot
 
 data:
-  folder: Results/FFORT/
+  folder: ../CombinedAlgorithms/results/AgainstBUDA
+#  folder: Results/FFORT/
   addition: .csv
 
 output:
@@ -12,30 +13,46 @@ output:
 plots:
   x_ysubplot:
     type: xy
-    metric: expcost
+    metric: time(s)
     log: true
     failure: false
     layout: [2, 2]
     pairs:
-      - [EDAcost, EDA]
-      - [BUDAcost, BUDA]
-      - [CuDAcost, CuDA]
-      - [PaDAcost, PaDA]
+#      - [BarraCuDA0, BUDAcost]
+#      - [BarraCuDA1, BUDAcost]
+#      - [BarraCuDA2, BUDAcost]
+#      - [BarraCuDA3, BUDAcost]
+      - [BarraCuDA0, CuDAcost]
+      - [BarraCuDA1, CuDAcost]
+      - [BarraCuDA2, CuDAcost]
+      - [BarraCuDA3, CuDAcost]
+#      - [EDAcost, EDA]
+#      - [BUDAcost, BUDA]
+#      - [CuDAcost, CuDA]
+#      - [PaDAcost, PaDA]
     color:
       - "#4C72B0" # blue
       - "#C44E52" # red
 
   x_yplot:
     type: xy
-    metric: expcost
+    metric: expcost_given_failure
     log: false
     failure: false
     layout: [1,1]
-    overlay: True
+    overlay: False
     pairs:
-      - [BUDAcost, BUDA]
-      - [CuDAcost, CuDA]
-      - [PaDAcost, PaDA]
+#      - [ BarraCuDA0, CuDAcost ]
+#      - [ BarraCuDA1, CuDAcost ]
+      - [BarraCuDA1, BarraCuDA2]
+#      - [ BarraCuDA1, BUDAcost]
+#      - [ BarraCuDA2, CuDAcost ]
+#      - [BarraCuDA2, BUDAcost]
+#      - [ BarraCuDA3, CuDAcost ]
+#      - [BarraCuDA3, BUDAcost]
+#      - [BUDAcost, BUDA]
+#      - [CuDAcost, CuDA]
+#      - [PaDAcost, PaDA]
 #    pairs:
 #      - [BUDAcost, CuDAcost]
 #      - [BUDAcost, PaDAcost]
@@ -45,9 +62,9 @@ plots:
       - "#55A868" # red (for y=x line)
       - "#DD8452"
     markers:
-      - x
-      - p
-      - D
+      - o
+#      - p
+#      - D
 
   summary:
     type: summary

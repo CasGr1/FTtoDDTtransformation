@@ -29,7 +29,7 @@ def BUDAcostalgorithm(ft):
     if ft.type == FtElementType.AND:
         ordered_children = sorted(subtrees, key=lambda x: x.expected_cost()/(1-x.fail_prob()))
         new_ddt = ordered_children[0]
-        for i in range(1,len(ordered_children)):
+        for i in range(1, len(ordered_children)):
             new_ddt = replace_leaves(new_ddt, DdtElementType.ONE, ordered_children[i])
         return new_ddt
 

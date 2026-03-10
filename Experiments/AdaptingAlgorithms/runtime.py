@@ -29,7 +29,7 @@ def compute_stats_per_bucket(file, column="time(s)"):
 
 
 if __name__ == "__main__":
-    file_path = "Results/Old/BUDATESTDAG.csv"  # <-- change this
+    file_path = "REALFINAL/Runtime/EDAcostruntime.csv"
     stats = compute_stats_per_bucket(file_path, column="time(s)")
 
     for bucket in stats:

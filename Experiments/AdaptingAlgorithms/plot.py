@@ -125,7 +125,7 @@ def run_xy_plot(cfg):
                 failure=cfg.get("failure", False),
                 ax=ax,
                 xyline=cfg.get("xyline", True),
-                color=None
+                color=colors[0]
             )
 
 
@@ -159,9 +159,10 @@ def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True, 
     ax.scatter(data1[metric], data2[metric], color=color, marker=marker,label=name2)
 
     if "cost" in metric:
-        ax.set_xlabel(f"expected cost cost")
-        ax.set_ylabel(f"expected cost original")
-        title = f"Expected cost given failure comparison FFORT "
+        ax.set_xlabel(f"expected cost {name1}")
+        ax.set_ylabel(f"expected cost {name2}")
+        title = f"Expected cost given failure comparison {name1} vs {name2} "
+        # title = ""
     elif "time" in metric:
         ax.set_xlabel(f"runtime (s) {name1}")
         ax.set_ylabel(f"runtime (s) {name2}")

@@ -1,0 +1,7 @@
+folder:
+  - "Results/FINAL/BUDA.csv"
+  - "Results/FINAL/BUDAcost.csv"
+  - "../../FaultTree/FTs/RandomGen/FINALbinary/"
+#limit:
+#  - 2
+#  - 2
