@@ -202,113 +202,48 @@ def print_avg_improvements_per_height(full_df):
         print(f"  Avg Cost Improvement:    {avg_cost_impr:.2f}%")
         print()
 
-# def plot_figure_dedup_cost(full_df, ft_data, config):
-#     """
-#     Same as plot_figure(), but if an FT has the same
-#     'expcost_given_failure' for multiple heights,
-#     only the row with the largest height is plotted.
-#     """
-#
-#     # -----------------------------
-#     # Preprocess: remove duplicate cost per FT
-#     # -----------------------------
-#     filtered_ft_data = {}
-#     filtered_rows = []
-#
-#     for ft_name, df in ft_data.items():
-#         # Sort by height so largest height comes last
-#         df_sorted = df.sort_values("height")
-#
-#         # For duplicate costs, keep the largest height
-#         df_filtered = (
-#             df_sorted
-#             .sort_values("height")                # ascending
-#             .drop_duplicates(
-#                 subset=["expcost_given_failure"],
-#                 keep="last"                       # keep largest height
-#             )
-#             .sort_values("height")
-#         )
-#
-#         filtered_ft_data[ft_name] = df_filtered
-#         filtered_rows.append(df_filtered)
-#
-#     filtered_full_df = pd.concat(filtered_rows, ignore_index=True)
-#
-#     # -----------------------------
-#     # Begin plotting (same logic)
-#     # -----------------------------
-#     plt.figure(figsize=(9, 7))
-#
-#     highlight_fts = config.get("highlight_fts", [])
-#     heights = sorted(filtered_full_df["height"].unique())
-#     cmap = plt.get_cmap("tab20")
-#     colors = {h: cmap(i % 20) for i, h in enumerate(heights)}
-#     plotted_heights = config.get("heights")
-#
-#     # -----------------------------
-#     # Plot non-highlighted FTs first
-#     # -----------------------------
-#     for h in heights:
-#         if h in plotted_heights:
-#             subset = filtered_full_df[filtered_full_df["height"] == h]
-#
-#             # exclude highlighted FTs
-#             subset = subset[~subset["ft_name"].isin(highlight_fts)]
-#
-#             plt.scatter(
-#                 subset["runtime_norm"],
-#                 subset["cost_norm"],
-#                 label=f"height {h}",
-#                 color=colors[h],
-#                 edgecolors="black",
-#                 linewidths=0.5,
-#                 s=60,
-#                 alpha=0.8
-#             )
-#
-#     # -----------------------------
-#     # Plot highlighted FTs
-#     # -----------------------------
-#     for ft_name in highlight_fts:
-#         if ft_name not in filtered_ft_data:
-#             print(f"Warning: {ft_name} not found.")
-#             continue
-#
-#         df = filtered_ft_data[ft_name]
-#
-#         # Draw thin colored line segments between heights
-#         for i in range(len(df) - 1):
-#             h = df.iloc[i]["height"]
-#             plt.plot(
-#                 df.iloc[i:i + 2]["runtime_norm"],
-#                 df.iloc[i:i + 2]["cost_norm"],
-#                 color=colors[h],
-#                 linewidth=1.2,
-#                 alpha=0.9
-#             )
-#
-#         # Draw larger points
-#         for _, row in df.iterrows():
-#             plt.scatter(
-#                 row["runtime_norm"],
-#                 row["cost_norm"],
-#                 color=colors[row["height"]],
-#                 edgecolors="black",
-#                 linewidths=1.2,
-#                 s=120,
-#                 zorder=5
-#             )
-#
-#     plt.xlabel("Normalized Runtime")
-#     plt.ylabel("Normalized Expected Cost Given Failure")
-#     plt.title("Runtime vs Expected Cost (Normalized per FT)")
-#     plt.legend(title="Height", bbox_to_anchor=(1.05, 1), loc="upper left")
-#
-#     plt.grid(True, alpha=0.3)
-#     plt.tight_layout()
-#     plt.show()
+def run_plots_from_cfg(cfg):
+    """
+    Uses the main experiment config instead of a separate YAML.
+    """
 
+    results_folder = cfg["paths"]["results_dir"]
+
+    # reuse your existing logic but override config source
+    csv_files = glob.glob(os.path.join(results_folder, "*.csv"))
+
+    if len(csv_files) == 0:
+        print("No CSV files found.")
+        return
+
+    all_data = []
+    ft_data = {}
+
+    for file in csv_files:
+        ft_name = os.path.splitext(os.path.basename(file))[0]
+        df = pd.read_csv(file)
+
+        if len(df) == 0:
+            continue
+
+        # baseline
+        baseline_runtime = df.loc[df["height"] == 0, "runtime"].values[0]
+        baseline_cost = df.loc[df["height"] == 0, "expcost_given_failure"].values[0]
+
+        df["runtime_norm"] = df["runtime"] / baseline_runtime
+        df["cost_norm"] = df["expcost_given_failure"] / baseline_cost
+        df["ft_name"] = ft_name
+
+        all_data.append(df)
+        ft_data[ft_name] = df.sort_values("height")
+
+    full_df = pd.concat(all_data, ignore_index=True)
+
+    # Decide what to do
+    if cfg.get("plot", {}).get("enabled", True):
+        plot_figure(full_df, ft_data, cfg["plot"])
+    else:
+        print_avg_improvements_per_height(full_df)
 
 if __name__ == "__main__":
     full_df, ft_data, config = load_and_normalize_data("plot_config.yaml")

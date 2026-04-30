@@ -1,5 +1,5 @@
 # from FaultTree import *
-from FaultTree.FaultTree import *
+from .FaultTree import *
 
 def FTParse(filename):
     fts = {}

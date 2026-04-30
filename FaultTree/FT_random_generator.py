@@ -1,4 +1,4 @@
-from FaultTree import *
+from .FaultTree import *
 import numpy as np
 
 

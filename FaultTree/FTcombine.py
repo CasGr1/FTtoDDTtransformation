@@ -1,5 +1,5 @@
 import os
-from FTParser import *
+from .FTParser import *
 import numpy as np
 
 
@@ -93,7 +93,7 @@ def new_TOP(FT1gates, FT1bes, FT2gates, FT2bes, GATETYPE):
     new_gate = ["TOPGATE", GATETYPE, FT1gates[0][0], FT2gates[0][0]]
     return [new_gate] + FT1gates + FT2gates, FT1bes + FT2bes
 
-def random_gen(folder, min_size):
+def random_gen(folder, min_size, temp_path):
     FTfile = np.random.choice(os.listdir(folder))
     new_ft = FTpartialparser(os.path.join(folder, FTfile), "A")
     extension = 1
@@ -108,8 +108,8 @@ def random_gen(folder, min_size):
             new_ft = random_shared_be(new_ft[0], new_ft[1], ext_ft[0], ext_ft[1], np.random.choice(["and", "or"]))
         elif choice == 3:
             new_ft = new_TOP(new_ft[0], new_ft[1], ext_ft[0], ext_ft[1], np.random.choice(["and", "or"]))
-        FTsave(new_ft[0], new_ft[1], "FTs/FFORTcombined/MinHeight5/temp.dft")
-        FTparsed = FTParse("FTs/FFORTcombined/MinHeight5/temp.dft")
+        FTsave(new_ft[0], new_ft[1], temp_path)
+        FTparsed = FTParse(temp_path)
         height = FTparsed.max_height()
         print(height)
         extension += 1

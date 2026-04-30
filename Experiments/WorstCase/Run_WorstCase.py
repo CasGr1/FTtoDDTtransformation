@@ -7,6 +7,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import numpy as np
+from matplotlib.ticker import PercentFormatter
 
 def load_config(yaml_file="run_config.yaml"):
     with open(yaml_file, "r") as f:
@@ -199,7 +200,8 @@ def plot_accuracy_vs_threshold(config, metric, min_threshold=1.0, max_threshold=
     plt.title(f"{metric} vs Threshold", fontsize=16)
     plt.xlabel("Threshold", fontsize=12)
 
-    plt.ylabel(metric, fontsize=12)
+    plt.ylabel(f"{metric}", fontsize=12)
+    plt.gca().yaxis.set_major_formatter(PercentFormatter(1.0))
     plt.grid(alpha=0.3)
     plt.ylim(0, 1)
     plt.tight_layout()
@@ -212,7 +214,7 @@ if __name__ == "__main__":
     config = load_config()
     # run_wc(config)
     # results = run_wc_alt(config)
-    # plot_accuracy_vs_threshold(config, "precision")
-    print(run_wc_alt(config, 1.26))
+    plot_accuracy_vs_threshold(config, "accuracy")
+    # print(run_wc_alt(config, 1.26))
 
 

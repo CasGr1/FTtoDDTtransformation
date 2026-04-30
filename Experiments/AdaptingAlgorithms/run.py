@@ -189,29 +189,25 @@ def process_file(file_path, fname, algorithms, addition, rt_flag, timeout=1):
     print(f"file done: {file_path}")
     return payload
 
-# ----------------------------
-# Main execution
-# ----------------------------
-if __name__ == "__main__":
-    mp.set_start_method("spawn", force=True)  # Windows safe
+def run_experiments(config):
+    mp.set_start_method("spawn", force=True)
 
-    config = load_config("run_config.yaml")
-    folder = config["folder"]
-    output_folder = config["output_folder"]
+    folder = config["experiment"]["folder"]
+    output_folder = config["experiment"]["output_folder"]
     addition = config.get("addition", "TEST")
     algorithms = config.get("algorithms", ["BUDAcost", "BUDA"])
     timeout_sec = config.get("timeout", 10)
-    rti_flag = config.get("runtime", False)
     runtime_flag = config.get("runtime", True)
     max_workers = config.get("max_workers") or max(1, os.cpu_count() // 2)
     with_subfolder = config.get("with_subfolder", False)
 
-    # Prepare CSV files
+    # Prepare CSVs
     for alg in algorithms:
         write_csv_header(output_folder, alg, addition)
 
-    # Prepare tasks
+    # Build task list
     tasks = []
+
     if with_subfolder:
         for sup in os.listdir(folder):
             supfolder = os.path.join(folder, sup)
@@ -224,23 +220,45 @@ if __name__ == "__main__":
     else:
         for fname in os.listdir(folder):
             full_path = os.path.join(folder, fname)
-            match = re.search(r'bes(\d+)', fname)
-            if match and int(match.group(1)) < 10:
-                if os.path.isfile(full_path):
-                    tasks.append((full_path, fname))
+            if os.path.isfile(full_path):
+                tasks.append((full_path, fname))
 
-    MAX_WORKERS = max(1, os.cpu_count() // 2)
+    # Run
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(
+                process_file,
+                *task,
+                algorithms,
+                addition,
+                runtime_flag,
+                timeout_sec
+            )
+            for task in tasks
+        ]
 
-    with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = [executor.submit(process_file, *task, algorithms, addition, rti_flag, timeout_sec) for task in tasks]
+        for future in as_completed(futures):
+            results = future.result()
 
-        try:
-            for future in as_completed(futures):
-                results = future.result()
+            for row in results:
+                (
+                    alg,
+                    addition,
+                    fname,
+                    expcost,
+                    expcost_fail,
+                    bes,
+                    runtime,
+                    gates,
+                    cs,
+                    compared
+                ) = row
 
-                for (
-                        alg,
-                        addition,
+                csv_path = os.path.join(output_folder, f"{alg}{addition}.csv")
+
+                with open(csv_path, "a", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow([
                         fname,
                         expcost,
                         expcost_fail,
@@ -249,23 +267,4 @@ if __name__ == "__main__":
                         gates,
                         cs,
                         compared
-                ) in results:
-                    csv_path = os.path.join(output_folder, f"{alg}{addition}.csv")
-                    with open(csv_path, "a", newline="") as f:
-                        writer = csv.writer(f)
-                        writer.writerow([
-                            fname,
-                            expcost,
-                            expcost_fail,
-                            bes,
-                            runtime,
-                            gates,
-                            cs,
-                            compared
-                        ])
-                        f.flush()
-
-        except KeyboardInterrupt:
-            print("\nInterrupted! Writing completed results and shutting down...")
-            executor.shutdown(wait=False, cancel_futures=True)
-            raise
+                    ])

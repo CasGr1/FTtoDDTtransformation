@@ -71,21 +71,21 @@ def load_ft(filepath):
 # -------------------------
 # Main experiment runner
 # -------------------------
-def main(config_path="run_config.yaml"):
-    # Load config
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
+def run_barracuda_experiment(cfg):
+    """
+    Runs BarraCuDA on all .dft files in cfg["paths"]["ft_dir"]
+    and stores CSV results in cfg["paths"]["results_dir"]
+    """
 
-    folder = config["fault_tree_folder"]
-    output_folder = config["output_folder"]
-    timeout = config.get("timeout", 60)
-    recursive = config.get("recursive", False)
+    ft_folder = cfg["paths"]["ft_dir"]
+    output_folder = cfg["paths"]["results_dir"]
+    timeout = cfg["experiment"].get("timeout", 60)
+    recursive = cfg["experiment"].get("recursive", False)
 
     os.makedirs(output_folder, exist_ok=True)
 
-    # Find all .dft files
     pattern = "**/*.dft" if recursive else "*.dft"
-    ft_files = glob.glob(os.path.join(folder, pattern), recursive=recursive)
+    ft_files = glob.glob(os.path.join(ft_folder, pattern), recursive=recursive)
 
     print(f"Found {len(ft_files)} fault trees.")
 
@@ -108,11 +108,9 @@ def main(config_path="run_config.yaml"):
 
             exp_cost, exp_cost_failure, runtime = result
 
-            # Prepare output file
             ft_name = os.path.splitext(os.path.basename(filepath))[0]
             csv_path = os.path.join(output_folder, f"{ft_name}.csv")
 
-            # Write CSV
             with open(csv_path, "w", newline="") as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow([
@@ -135,8 +133,5 @@ def main(config_path="run_config.yaml"):
         except Exception as e:
             print(f"Error processing {filepath}: {e}")
 
-    print("Finished.")
+    print("Finished BarraCuDA experiment.")
 
-
-if __name__ == "__main__":
-    main()

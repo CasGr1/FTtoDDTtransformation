@@ -13,23 +13,23 @@ output:
 plots:
   x_ysubplot:
     type: xy
-    metric: time(s)
+    metric: expcost_given_failure
     log: true
-    failure: false
+    failure: true
     layout: [2, 2]
     pairs:
 #      - [BarraCuDA0, BUDAcost]
 #      - [BarraCuDA1, BUDAcost]
 #      - [BarraCuDA2, BUDAcost]
 #      - [BarraCuDA3, BUDAcost]
-      - [BarraCuDA0, CuDAcost]
-      - [BarraCuDA1, CuDAcost]
-      - [BarraCuDA2, CuDAcost]
-      - [BarraCuDA3, CuDAcost]
-#      - [EDAcost, EDA]
-#      - [BUDAcost, BUDA]
-#      - [CuDAcost, CuDA]
-#      - [PaDAcost, PaDA]
+#      - [BarraCuDA0, CuDAcost]
+#      - [BarraCuDA1, CuDAcost]
+#      - [BarraCuDA2, CuDAcost]
+#      - [BarraCuDA3, CuDAcost]
+      - [EDAcost, EDA]
+      - [BUDAcost, BUDA]
+      - [CuDAcost, CuDA]
+      - [PaDAcost, PaDA]
     color:
       - "#4C72B0" # blue
       - "#C44E52" # red
@@ -40,7 +40,7 @@ plots:
     log: false
     failure: false
     layout: [1,1]
-    overlay: False
+    overlay: false
     pairs:
 #      - [ BarraCuDA0, CuDAcost ]
 #      - [ BarraCuDA1, CuDAcost ]
@@ -50,6 +50,7 @@ plots:
 #      - [BarraCuDA2, BUDAcost]
 #      - [ BarraCuDA3, CuDAcost ]
 #      - [BarraCuDA3, BUDAcost]
+#      - [EDAcost,  EDA]
 #      - [BUDAcost, BUDA]
 #      - [CuDAcost, CuDA]
 #      - [PaDAcost, PaDA]
@@ -62,31 +63,32 @@ plots:
       - "#55A868" # red (for y=x line)
       - "#DD8452"
     markers:
-      - o
+#      - x
+#      - o
 #      - p
-#      - D
 
   summary:
     type: summary
-    metric: expcost
+    metric: expcost_given_failure
     plottype: bar
     pltdata: avg
     names:
+      - EDAcost
+      - EDA
       - BUDAcost
       - BUDA
       - CuDAcost
       - CuDA
       - PaDAcost
       - PaDA
-#      - EDAcost
-#      - EDA
     colors:
+      - "#F2B38F" # orange
+      - "#DD8452"
       - "#7EA6E0" # blue
       - "#4C72B0"
       - "#E08A8D" # red
       - "#C44E52"
       - "#88C999" # green
       - "#55A868"
-      - "#F2B38F" # orange
-      - "#DD8452"
+
 

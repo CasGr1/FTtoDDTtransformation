@@ -35,31 +35,48 @@ def load_data_in_10s(file, column):
 
     return tuple(buckets)
 
+def run_plots(cfg):
+    active = cfg["plotting"]["active_plot"]
+    plot_cfg = dict(cfg["plotting"]["plots"][active])
 
-def run_from_yaml(cfg):
-    active = cfg["active_plot"]
-    plot_cfg = dict(cfg["plots"][active])  # copy
-
-    # merge global data config
-    data_cfg = cfg.get("data", {})
+    data_cfg = cfg["plotting"].get("data", {})
     plot_cfg.setdefault("folder", data_cfg.get("folder"))
     plot_cfg.setdefault("addition", data_cfg.get("addition"))
 
     if plot_cfg["type"] == "xy":
         fig = run_xy_plot(plot_cfg)
-        handle_output(
-            fig,
-            plot_cfg.get("output", cfg.get("output", {})),
-            default_name=plot_cfg.get("name", "xy_plot")
-        )
 
     elif plot_cfg["type"] == "summary":
         fig = plot_every_algorithm(plot_cfg)
-        handle_output(
-            fig,
-            plot_cfg.get("output", cfg.get("output", {})),
-            default_name=plot_cfg.get("name", "summary_plot")
-        )
+
+    else:
+        raise ValueError(f"Unknown plot type: {plot_cfg['type']}")
+
+    handle_output(fig, plot_cfg.get("output", {}))
+# def run_from_yaml(cfg):
+#     active = cfg["active_plot"]
+#     plot_cfg = dict(cfg["plots"][active])  # copy
+#
+#     # merge global data config
+#     data_cfg = cfg.get("data", {})
+#     plot_cfg.setdefault("folder", data_cfg.get("folder"))
+#     plot_cfg.setdefault("addition", data_cfg.get("addition"))
+#
+#     if plot_cfg["type"] == "xy":
+#         fig = run_xy_plot(plot_cfg)
+#         handle_output(
+#             fig,
+#             plot_cfg.get("output", cfg.get("output", {})),
+#             default_name=plot_cfg.get("name", "xy_plot")
+#         )
+#
+#     elif plot_cfg["type"] == "summary":
+#         fig = plot_every_algorithm(plot_cfg)
+#         handle_output(
+#             fig,
+#             plot_cfg.get("output", cfg.get("output", {})),
+#             default_name=plot_cfg.get("name", "summary_plot")
+#         )
 
 
 def run_xy_plot(cfg):
@@ -108,7 +125,8 @@ def run_xy_plot(cfg):
                 ax=ax,
                 xyline=(i==0),
                 color=colors[i],
-                marker=markers[i]
+                marker=markers[i],
+                cfg=cfg
             )
             ax.legend()
     else:
@@ -125,11 +143,12 @@ def run_xy_plot(cfg):
                 failure=cfg.get("failure", False),
                 ax=ax,
                 xyline=cfg.get("xyline", True),
-                color=colors[0]
+                color=colors[0],
+                cfg=cfg
             )
 
 
-def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True, color=None, marker=None):
+def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True, color=None, marker=None, cfg=None):
     vals = data1[metric].dropna()
     if xyline and not vals.empty:
         maxvalue = vals.max()
@@ -140,35 +159,22 @@ def plot_x_y(data1, data2, metric, log, name1, name2, failure, ax, xyline=True, 
     # x = data1[metric]
     # y = data2[metric]
 
-    # mask_outlier = (x > maxvalue) | (y > maxvalue)
-    # mask_normal = ~mask_outlier
 
     if color is None:
         color = "blue"
     if marker is None:
         marker = "."
-    # ax.scatter(
-    #     x[mask_normal],
-    #     y[mask_normal],
-    #     edgecolors="none",
-    #     color=color,
-    #     label=f"{name2}",
-    #     marker=marker
-    # )
 
     ax.scatter(data1[metric], data2[metric], color=color, marker=marker,label=name2)
 
-    if "cost" in metric:
-        ax.set_xlabel(f"expected cost {name1}")
-        ax.set_ylabel(f"expected cost {name2}")
-        title = f"Expected cost given failure comparison {name1} vs {name2} "
-        # title = ""
-    elif "time" in metric:
-        ax.set_xlabel(f"runtime (s) {name1}")
-        ax.set_ylabel(f"runtime (s) {name2}")
-        title = f"Runtime comparison of {name1} vs {name2}"
+    if cfg is not None:
+        ax.set_xlabel(cfg.get("x_label", name1))
+        ax.set_ylabel(cfg.get("y_label", name2))
+        title = cfg.get("title", f"{name1} vs {name2}")
     else:
-        title = f"{metric}: {name1} vs {name2}"
+        ax.set_xlabel(name1)
+        ax.set_ylabel(name2)
+        title = f"{name1} vs {name2}"
 
     if failure:
         title += " given failure"
@@ -261,6 +267,7 @@ def plot_every_algorithm(cfg):
                 showfliers=True
             )
 
+
     ax.set_xticks(x)
     ax.set_xticklabels(ft_labels)
     ax.set_xlabel("#BE")
@@ -273,7 +280,9 @@ def plot_every_algorithm(cfg):
         ax.set_ylabel(cfg["metric"])
 
     ax.legend()
-    fig.tight_layout()
+    fig.tight_layout(rect=[0,0,1,0.92])
+    ax.set_title("Average expected cost given failure per algorithm for different BE ranges")
+
 
     return fig
 
