@@ -27,14 +27,14 @@ paths:
   base_dir: "data/exp1"         # everything stored here
 
 algorithms:
-#  - CuDAcost
-#  - CuDA
+  - CuDAcost
+  - CuDA
   - BUDAcost
   - BUDA
-#  - PaDAcost
-#  - PaDA
-#  - EDAcost
-#  - EDA
+  - PaDAcost
+  - PaDA
+  - EDAcost
+  - EDA
 #  - BarraCuDA0
 #  - BarraCuDA1
 #  - BarraCuDA2
@@ -54,6 +54,9 @@ plotting:
       overlay: false
       pairs:
         - [CuDAcost, CuDA]
+        - [BUDAcost, BUDA]
+        - [PaDAcost, PaDA]
+        - [EDAcost, EDA]
       color:
         - "#2E5A9A" # main points (medium blue)
         - "#55A868" # red (for y=x line)
