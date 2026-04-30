@@ -1,0 +1,6 @@
+toplevel "G1";
+"G1" or "G2" "BE3";
+"G2" and "BE1" "BE2";
+"BE1" prob=3.873e-03 cost=17;
+"BE2" prob=3.783e-03 cost=248;
+"BE3" prob=3.361e-03 cost=588;

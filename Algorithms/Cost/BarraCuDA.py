@@ -6,6 +6,7 @@ from DDT.DDT import *
 def BarraCuDA(ft, BUDADEPTH, depth=0):
     ddt = BarraCuDA_algorithm(ft, BUDADEPTH, depth)
     return ddt.remove_duplicate_vertices()
+    # return ddt
 
 
 def BarraCuDA_algorithm(ft, BUDADEPTH, depth=0):

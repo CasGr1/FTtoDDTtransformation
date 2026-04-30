@@ -1,0 +1,62 @@
+# configs/exp1.yaml
+
+experiment:
+  name: "exp1_baseline"
+  type: exp1
+  folder: "data/exp1/dags"
+  output_folder: "data/exp1/results"
+  description: ""
+  gen_ft: true
+
+seed: 42
+
+ft_generation:
+  or_prob_range: [0.0, 1.0]     # probability of OR gate
+  max_children_range: [2, 10]   # branching factor
+  be_range: [ 2, 10 ]           # number of basic events (min, max)
+  n_per_size: 2               # number of FTs per size
+  clean_output: true
+
+dag:
+  enabled: true
+  replace_be_prob: 0.1
+  merge_be_prob: 0.2
+  clean_output: true
+
+paths:
+  base_dir: "data/exp1"         # everything stored here
+
+algorithms:
+  - CuDAcost
+  - CuDA
+#  - BUDAcost
+#  - BUDA
+#  - PaDAcost
+#  - PaDA
+#  - EDAcost
+#  - EDA
+#  - BarraCuDA0
+#  - BarraCuDA1
+#  - BarraCuDA2
+#  - BarraCuDA3
+
+plotting:
+  active_plot: main_plot
+
+  data:
+    folder: data/exp1/results
+    addition: TEST.csv
+
+  plots:
+    main_plot:
+      type: xy
+      metric: expcost
+      overlay: false
+      pairs:
+        - [CuDAcost, CuDA]
+      color:
+        - "#2E5A9A" # main points (medium blue)
+        - "#55A868" # red (for y=x line)
+      x_label: expected cost
+      y_label: expected cost
+      title: expected cost of CuDAcost vs CuDA

@@ -1,0 +1,36 @@
+experiment:
+  type: exp3
+  name: combined_fault_tree_experiment
+  n_samples: 3
+  min_size: 3
+  timeout: 60
+  seed: 42
+  base_ft_folder: "FaultTree/FTs/FFORTcost"
+  ft_gen: true
+  clean_dir: true
+
+paths:
+  base_dir: "data/exp3"
+  results_dir: "data/exp3/exp3_results"
+  ft_dir: "data/exp3/exp3_fts"
+
+
+plot:
+  enabled: true
+  plot: true
+  faintline: false
+  heights:
+    - 0
+    - 1
+    - 2
+    - 5
+    - 7
+  highlight_colors:
+    - "#7FA6E0"  # brighter blue
+    - "#E57B7F"  # brighter red
+    - "#7CCB8C"  # brighter green
+    - "#F2A777"  # brighter orange
+  highlight_fts:
+    - "FT42"
+    - "FT2"
+    - "FT4"

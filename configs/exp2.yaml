@@ -1,0 +1,34 @@
+# configs/exp2.yaml
+
+experiment:
+  name: "exp2_baseline"
+  type: exp2
+  folder: "data/exp2/fts"
+  output_folder: "data/exp2/results"
+  description: ""
+  gen_ft: true
+
+ft_generation:
+  or_prob_range: [0.0, 1.0]     # probability of OR gate
+  max_children_range: [2, 10]   # branching factor
+  be_range: [ 2, 5 ]           # number of basic events (min, max)
+  n_per_size: 1               # number of FTs per size
+  clean_output: true
+
+dag:
+  enabled: true
+  replace_be_prob: 0.1
+  merge_be_prob: 0.2
+  clean_output: true
+
+paths:
+  base_dir: "data/exp2/"
+  ft_folder: "data/exp2/fts"
+  binary_folder: "data/exp2/binary_fts"
+
+plot_folder:
+  folder:
+    - "data/exp2/results/BUDATEST.csv"
+    - "data/exp2/results/BUDAcostTEST.csv"
+    - "data/exp2/binary_fts"
+accuracyorprecision: precision
